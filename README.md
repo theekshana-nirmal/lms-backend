@@ -46,7 +46,7 @@ This repository contains the backend code for a comprehensive Learning Managemen
 
 1. **Clone the repository**
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/theekshana-nirmal/lms-backend.git
    cd lms-backend
    ```
 
