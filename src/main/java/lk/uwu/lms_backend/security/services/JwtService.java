@@ -5,6 +5,7 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import lk.uwu.lms_backend.entities.User;
+import org.aspectj.weaver.tools.Trace;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
@@ -49,7 +50,7 @@ public class JwtService {
         return extractClaims(token, Claims::getSubject);
     }
 
-    // Generate JWT Tokens
+    // Generate JWT Token
     public String generateToken(Map<String, Objects> extraClaims, UserDetails userDetails){
         return Jwts
                 .builder()
@@ -64,11 +65,20 @@ public class JwtService {
                 ;
     }
 
-    //
-
     // Validate token
-
-    // Extract expiration date
+    private boolean isTokenValid(String token, UserDetails userDetails){
+        final String userEmail = extractUserEmail(token);
+        return (userDetails.getUsername().equals(userEmail) && !isTokenExpired(token));
+    }
 
     // Check if token expired
+    private boolean isTokenExpired(String token){
+        // Checks if the token’s expiration date is before now
+        return extractExpiration(token).before(new Date());
+    }
+
+    // Extract expiration date
+    private Date extractExpiration(String token){
+        return extractClaims(token, Claims::getExpiration);
+    }
 }
