@@ -6,9 +6,13 @@ import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import lk.uwu.lms_backend.entities.User;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
+import java.util.Date;
+import java.util.Map;
+import java.util.Objects;
 import java.util.function.Function;
 
 @Service
@@ -46,9 +50,21 @@ public class JwtService {
     }
 
     // Generate JWT Tokens
-    public String generateToken(User user){
-        return null;
+    public String generateToken(Map<String, Objects> extraClaims, UserDetails userDetails){
+        return Jwts
+                .builder()
+                .claims()
+                .add(extraClaims)
+                .subject(userDetails.getUsername())
+                .issuedAt(new Date(System.currentTimeMillis()))
+                .expiration(new Date(System.currentTimeMillis() + 1000*60*30))
+                .and()
+                .signWith(getSignInKey())
+                .compact()
+                ;
     }
+
+    //
 
     // Validate token
 
