@@ -5,11 +5,10 @@ to check the password and role,
 * If not, it gives a warning and stops the login.
 * */
 
-package lk.uwu.lms_backend.security.services;
+package lk.uwu.lms_backend.security;
 
 import lk.uwu.lms_backend.entities.User;
 import lk.uwu.lms_backend.repositories.UserRepository;
-import lk.uwu.lms_backend.security.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.UserDetails;
