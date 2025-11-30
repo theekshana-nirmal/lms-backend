@@ -34,16 +34,16 @@ public class JwtService {
                 .getPayload();
     }
 
-    // Extract Username (Email)
-    private String extractUserEmail(String token){
-        Claims claims = extractAllClaims(token);
-        return claims.getSubject();
-    }
-
     // Extract expiration date
     private Date extractExpiration(String token){
         Claims claims = extractAllClaims(token);
         return claims.getExpiration();
+    }
+
+    // Extract Username (Email)
+    public String extractUserEmail(String token){
+        Claims claims = extractAllClaims(token);
+        return claims.getSubject();
     }
 
     // Extracts the token from the Authorization header
