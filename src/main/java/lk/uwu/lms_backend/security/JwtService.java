@@ -24,14 +24,6 @@ public class JwtService {
         return Keys.hmacShaKeyFor(decode);
     }
 
-    // Extracts the token from the Authorization header
-    public String extractToken(String authHeader){
-        if (authHeader != null && authHeader.startsWith("Bearer ")){
-            return authHeader.substring(7);
-        }
-        return null;
-    }
-
     // This method extracts all claims (the payload) from the JWT token.
     private Claims extractAllClaims(String token){
         return Jwts
@@ -52,6 +44,14 @@ public class JwtService {
     private Date extractExpiration(String token){
         Claims claims = extractAllClaims(token);
         return claims.getExpiration();
+    }
+
+    // Extracts the token from the Authorization header
+    public String extractToken(String authHeader){
+        if (authHeader != null && authHeader.startsWith("Bearer ")){
+            return authHeader.substring(7);
+        }
+        return null;
     }
 
     // Generate JWT Access Token
