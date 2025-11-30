@@ -18,13 +18,14 @@ public class JwtService {
     @Value("${JWT_SECRET}")
     private String secret_key;
 
+    // --- HELPER METHODS ---
     // Converts the secret key string into a SecretKey object for signing JWTs
     private SecretKey getSignInKey(){
         byte[] decode = Decoders.BASE64.decode(secret_key);
         return Keys.hmacShaKeyFor(decode);
     }
 
-    // This method extracts all claims (the payload) from the JWT token.
+    // Extracts all claims (the payload) from the JWT token.
     private Claims extractAllClaims(String token){
         return Jwts
                 .parser()
@@ -54,43 +55,35 @@ public class JwtService {
         return null;
     }
 
-    // Generate JWT Access Token
-    public String generateAccessToken(Map<String, Object> extraClaims, UserDetails userDetails){
-        return Jwts
-                .builder()
-                .claims()
-                .add(extraClaims)
-                .subject(userDetails.getUsername())
-                .issuedAt(new Date(System.currentTimeMillis()))
-                .expiration(new Date(System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(30)))
-                .and()
-                .signWith(getSignInKey())
-                .compact()
-                ;
+    // --- GENERATION METHODS ---
+    // JWT Access Token
+    public String generateAccessToken(Map<String, Object> extraClaims, UserDetails userDetails) {
+        return buildToken(extraClaims, userDetails, TimeUnit.MINUTES.toMillis(30)); // 30 Minutes
     }
 
-    // Generate JWT Refresh Token
-    public String generateRefreshToken(Map<String, Object> extraClaims, UserDetails userDetails){
-        return Jwts
-                .builder()
-                .claims()
-                .add(extraClaims)
-                .subject(userDetails.getUsername())
-                .issuedAt(new Date(System.currentTimeMillis()))
-                .expiration(new Date(System.currentTimeMillis() + TimeUnit.DAYS.toMillis(30)))
-                .and()
-                .signWith(getSignInKey())
-                .compact()
-                ;
+    // JWT Refresh Token
+    public String generateRefreshToken(Map<String, Object> extraClaims, UserDetails userDetails) {
+        return buildToken(extraClaims, userDetails, TimeUnit.DAYS.toMillis(30)); // 30 Days
     }
 
-    // Validate token
+    // Build Token
+    private String buildToken(Map<String, Object> extraClaims, UserDetails userDetails, long expiration) {
+        return Jwts
+                .builder()
+                .claims(extraClaims)
+                .subject(userDetails.getUsername())
+                .issuedAt(new Date(System.currentTimeMillis()))
+                .expiration(new Date(System.currentTimeMillis() + expiration))
+                .signWith(getSignInKey())
+                .compact();
+    }
+
+    // --- VALIDATION METHODS ---
     public boolean isTokenValid(String token, UserDetails userDetails){
         final String userEmail = extractUserEmail(token);
         return (userDetails.getUsername().equals(userEmail) && isTokenNotExpired(token));
     }
 
-    // Check if token expired
     public boolean isTokenNotExpired(String token){
         return !extractExpiration(token).before(new Date());
     }
