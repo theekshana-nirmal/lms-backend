@@ -1,5 +1,6 @@
 package lk.uwu.lms_backend.dtos;
 
+import lk.uwu.lms_backend.entities.Role;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -10,7 +11,9 @@ import lombok.Setter;
 @Getter
 @Setter
 public class UserAuthResponseDTO {
+    private String email;
     private String accessToken;
     private String refreshToken;
+    private String role;
     private long expiresIn;
 }
