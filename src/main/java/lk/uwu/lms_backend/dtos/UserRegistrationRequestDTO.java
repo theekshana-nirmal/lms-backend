@@ -14,10 +14,10 @@ import lombok.Setter;
 @Setter
 public class UserRegistrationRequestDTO {
     @NotBlank(message = "First name is required")
-    private String first_name;
+    private String firstName;
 
     @NotBlank(message = "Last name is required")
-    private String last_name;
+    private String lastName;
 
     @NotBlank(message = "Email is required")
     @Email(message = "Email should be valid")
