@@ -21,19 +21,19 @@ public class User {
     private Long id;
 
     @Column(name = "first_name")
-    private String first_name;
+    private String firstName;
 
     @Column(name = "last_name")
-    private String last_name;
+    private String lastName;
 
     @Column(name = "email")
     private String email;
 
     @Column(name = "hashed_password")
-    private String hashed_password;
+    private String hashedPassword;
 
     @Column(name = "profile_photo_url")
-    private String profile_photo_url = "https://placehold.co/100x100";
+    private String profilePhotoUrl = "https://placehold.co/100x100";
 
     @Enumerated(EnumType.STRING)
     @Column(name = "role", nullable = false, updatable = false)
