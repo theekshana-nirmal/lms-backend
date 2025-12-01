@@ -1,6 +1,5 @@
 package lk.uwu.lms_backend.config;
 
-import lk.uwu.lms_backend.security.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

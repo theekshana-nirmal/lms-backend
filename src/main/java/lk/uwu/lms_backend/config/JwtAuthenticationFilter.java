@@ -1,9 +1,11 @@
-package lk.uwu.lms_backend.security;
+package lk.uwu.lms_backend.config;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lk.uwu.lms_backend.services.CustomUserDetailsService;
+import lk.uwu.lms_backend.services.JwtService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;

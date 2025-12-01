@@ -3,9 +3,8 @@
 * So it knows the user’s email, password, and role for login and access.
 * */
 
-package lk.uwu.lms_backend.security;
+package lk.uwu.lms_backend.entities;
 
-import lk.uwu.lms_backend.entities.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;

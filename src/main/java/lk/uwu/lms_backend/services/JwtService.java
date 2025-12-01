@@ -1,4 +1,4 @@
-package lk.uwu.lms_backend.security;
+package lk.uwu.lms_backend.services;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
