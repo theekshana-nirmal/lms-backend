@@ -1,6 +1,5 @@
 package lk.uwu.lms_backend.dtos;
 
-import lk.uwu.lms_backend.entities.Role;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
