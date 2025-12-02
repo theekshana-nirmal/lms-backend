@@ -5,13 +5,16 @@ import lk.uwu.lms_backend.dtos.UserLoginRequestDTO;
 import lk.uwu.lms_backend.dtos.UserRegistrationRequestDTO;
 import lk.uwu.lms_backend.entities.CustomUserDetails;
 import lk.uwu.lms_backend.entities.User;
+import lk.uwu.lms_backend.exceptions.UserAlreadyExistsException;
+import lk.uwu.lms_backend.exceptions.UserCredentialsInvalidException;
+import lk.uwu.lms_backend.exceptions.UserNotFoundException;
 import lk.uwu.lms_backend.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestBody;
 import java.util.HashMap;
 import java.util.concurrent.TimeUnit;
 
@@ -24,7 +27,12 @@ public class AuthenticationService {
     private final AuthenticationManager authenticationManager;
 
     // User registration
-    public UserAuthResponseDTO registerUser(@RequestBody UserRegistrationRequestDTO request) {
+    public UserAuthResponseDTO registerUser(UserRegistrationRequestDTO request) {
+        // Check if user already exists
+        if (userRepository.findByEmail(request.getEmail()).isPresent()) {
+            throw new UserAlreadyExistsException("User with email " + request.getEmail() + " already exists");
+        }
+
         User user = new User();
         user.setFirstName(request.getFirstName());
         user.setLastName(request.getLastName());
@@ -38,17 +46,20 @@ public class AuthenticationService {
     }
 
     // User Login
-    public UserAuthResponseDTO loginUser(@RequestBody UserLoginRequestDTO request) {
-        // Authenticate user credentials
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        request.getEmail(),
-                        request.getPassword()
-                )
-        );
+    public UserAuthResponseDTO loginUser(UserLoginRequestDTO request) throws UserCredentialsInvalidException {
+        try {
+            // Authenticate user credentials
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            request.getEmail(),
+                            request.getPassword()));
+        } catch (AuthenticationException e) {
+            throw new UserCredentialsInvalidException("Invalid email or password");
+        }
 
         // Retrieve user from the database
-        User user = userRepository.findByEmail(request.getEmail());
+        User user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new UserNotFoundException("User with email " + request.getEmail() + " not found"));
         return authResponse(user);
     }
 
@@ -66,8 +77,7 @@ public class AuthenticationService {
                 accessToken,
                 refreshToken,
                 user.getRole().name(),
-                TimeUnit.MINUTES.toMillis(30)
-        );
+                TimeUnit.MINUTES.toMillis(30));
     }
 
 }
