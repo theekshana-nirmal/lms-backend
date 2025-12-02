@@ -1,5 +1,6 @@
 package lk.uwu.lms_backend.controllers;
 
+import jakarta.servlet.http.HttpServletResponse;
 import lk.uwu.lms_backend.dtos.UserAuthResponseDTO;
 import lk.uwu.lms_backend.dtos.UserLoginRequestDTO;
 import lk.uwu.lms_backend.dtos.UserRegistrationRequestDTO;
@@ -21,18 +22,20 @@ public class AuthenticationController {
     // User Registration
     @PostMapping("/register")
     public ResponseEntity<UserAuthResponseDTO> register(
-            @RequestBody UserRegistrationRequestDTO request
+            @RequestBody UserRegistrationRequestDTO request,
+            HttpServletResponse httpServletResponse
     ){
-        UserAuthResponseDTO response = authenticationService.registerUser(request);
+        UserAuthResponseDTO response = authenticationService.registerUser(request, httpServletResponse);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     // User Login
     @PostMapping("/login")
     public ResponseEntity<UserAuthResponseDTO> login(
-            @RequestBody UserLoginRequestDTO request
+            @RequestBody UserLoginRequestDTO request,
+            HttpServletResponse httpServletResponse
     ){
-        UserAuthResponseDTO response = authenticationService.loginUser(request);
+        UserAuthResponseDTO response = authenticationService.loginUser(request, httpServletResponse);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 }
