@@ -1,15 +1,17 @@
 package lk.uwu.lms_backend.services;
 
 import lk.uwu.lms_backend.dtos.UserAuthResponseDTO;
+import lk.uwu.lms_backend.dtos.UserLoginRequestDTO;
 import lk.uwu.lms_backend.dtos.UserRegistrationRequestDTO;
 import lk.uwu.lms_backend.entities.CustomUserDetails;
 import lk.uwu.lms_backend.entities.User;
 import lk.uwu.lms_backend.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
+import org.springframework.web.bind.annotation.RequestBody;
 import java.util.HashMap;
 import java.util.concurrent.TimeUnit;
 
@@ -21,9 +23,9 @@ public class AuthenticationService {
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
 
-    // Step 1: Implement user registration
-    public UserAuthResponseDTO registerUser(UserRegistrationRequestDTO request){
-        var user = new User();
+    // User registration
+    public UserAuthResponseDTO registerUser(@RequestBody UserRegistrationRequestDTO request) {
+        User user = new User();
         user.setFirstName(request.getFirstName());
         user.setLastName(request.getLastName());
         user.setEmail(request.getEmail());
@@ -32,21 +34,38 @@ public class AuthenticationService {
 
         // Save user to the database
         User savedUser = userRepository.save(user);
+        return authResponse(savedUser);
+    }
 
-        // Create UserDetails object
-        CustomUserDetails userDetails = new CustomUserDetails(savedUser);
+    // User Login
+    public UserAuthResponseDTO loginUser(@RequestBody UserLoginRequestDTO request) {
+        // Authenticate user credentials
+        authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                        request.getEmail(),
+                        request.getPassword()
+                )
+        );
 
-        // Generate JWT Access Token
-        String jwtToken = jwtService.generateAccessToken(new HashMap<>(), userDetails);
+        // Retrieve user from the database
+        User user = userRepository.findByEmail(request.getEmail());
+        return authResponse(user);
+    }
 
-        // Generate Refresh Token
+    // Make authentication response with JWT tokens
+    private UserAuthResponseDTO authResponse(User user) {
+        // Convert to UserDetails
+        CustomUserDetails userDetails = new CustomUserDetails(user);
+
+        // Generate JWT Tokens
+        String accessToken = jwtService.generateAccessToken(new HashMap<>(), userDetails);
         String refreshToken = jwtService.generateRefreshToken(new HashMap<>(), userDetails);
 
         return new UserAuthResponseDTO(
-                savedUser.getEmail(),
-                jwtToken,
+                user.getEmail(),
+                accessToken,
                 refreshToken,
-                savedUser.getRole().name(),
+                user.getRole().name(),
                 TimeUnit.MINUTES.toMillis(30)
         );
     }
