@@ -8,10 +8,7 @@ import lk.uwu.lms_backend.services.AuthenticationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -38,4 +35,17 @@ public class AuthenticationController {
         UserAuthResponseDTO response = authenticationService.loginUser(request, httpServletResponse);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
+
+    // Refresh Token
+    @PostMapping("/refresh-token")
+    public ResponseEntity<UserAuthResponseDTO> refreshToken(
+            @CookieValue("refreshToken") String refreshToken,
+            HttpServletResponse httpServletResponse
+    ){
+        UserAuthResponseDTO response = authenticationService.refreshAccessToken(refreshToken, httpServletResponse);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+    // User Logout
+
 }
