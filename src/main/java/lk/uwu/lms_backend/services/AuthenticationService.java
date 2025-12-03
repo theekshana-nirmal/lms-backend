@@ -89,4 +89,28 @@ public class AuthenticationService {
                 TimeUnit.MINUTES.toMillis(30));
     }
 
+    // Get new Access Token using Refresh Token
+    public UserAuthResponseDTO refreshAccessToken(String refreshToken, HttpServletResponse response) {
+        // Validate Refresh Token
+        String userEmail = jwtService.extractUserEmail(refreshToken);
+        User user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new UserNotFoundException("User with email " + userEmail + " not found"));
+
+        CustomUserDetails userDetails = new CustomUserDetails(user);
+        if (!jwtService.isTokenValid(refreshToken, userDetails)) {
+            throw new UserCredentialsInvalidException("Invalid refresh token");
+        }
+
+        // Generate new Access Token
+        String newAccessToken = jwtService.generateAccessToken(new HashMap<>(), userDetails);
+
+        return new UserAuthResponseDTO(
+                user.getEmail(),
+                newAccessToken,
+                user.getRole().name(),
+                TimeUnit.MINUTES.toMillis(30));
+    }
+
+    // User Logout
+
 }
