@@ -1,6 +1,7 @@
 package lk.uwu.lms_backend.controllers;
 
 import jakarta.servlet.http.HttpServletResponse;
+import lk.uwu.lms_backend.dtos.LogoutResponseDTO;
 import lk.uwu.lms_backend.dtos.UserAuthResponseDTO;
 import lk.uwu.lms_backend.dtos.UserLoginRequestDTO;
 import lk.uwu.lms_backend.dtos.UserRegistrationRequestDTO;
@@ -47,5 +48,15 @@ public class AuthenticationController {
     }
 
     // User Logout
-
+    @PostMapping("/logout")
+    public ResponseEntity<LogoutResponseDTO> logout(
+            HttpServletResponse httpServletResponse
+    ){
+        authenticationService.logoutUser(httpServletResponse);
+        LogoutResponseDTO response = new LogoutResponseDTO(
+                "User logged out successfully",
+                true
+        );
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
 }
