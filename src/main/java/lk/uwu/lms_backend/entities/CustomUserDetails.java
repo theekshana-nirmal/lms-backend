@@ -1,7 +1,7 @@
 /*
-* This class connects 'User' entity to Spring Security,
-* So it knows the user’s email, password, and role for login and access.
-* */
+ * This class connects 'User' entity to Spring Security,
+ * So it knows the user’s email, password, and role for login and access.
+ * */
 
 package lk.uwu.lms_backend.entities;
 
@@ -19,7 +19,7 @@ public class CustomUserDetails implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return Collections.singleton(new SimpleGrantedAuthority(user.getRole().name()));
+        return Collections.singleton(new SimpleGrantedAuthority("ROLE_" + user.getRole().name()));
     }
 
     @Override
