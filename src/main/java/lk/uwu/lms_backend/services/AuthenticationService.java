@@ -112,5 +112,13 @@ public class AuthenticationService {
     }
 
     // User Logout
-
+    public void logoutUser(HttpServletResponse response) {
+        // Invalidate the refresh token cookie
+        Cookie refreshTokenCookie = new Cookie("refreshToken", null);
+        refreshTokenCookie.setHttpOnly(true);
+        refreshTokenCookie.setPath("/");
+        // refreshTokenCookie.setSecure(true);
+        refreshTokenCookie.setMaxAge(0); // Expire immediately
+        response.addCookie(refreshTokenCookie);
+    }
 }
