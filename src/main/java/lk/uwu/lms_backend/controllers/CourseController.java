@@ -1,6 +1,5 @@
 package lk.uwu.lms_backend.controllers;
 
-import jakarta.servlet.http.HttpServletRequest;
 import lk.uwu.lms_backend.dtos.CourseRequestDTO;
 import lk.uwu.lms_backend.dtos.CourseResponseDTO;
 import lk.uwu.lms_backend.dtos.ResponseDTO;
@@ -30,9 +29,18 @@ public class CourseController {
     @PreAuthorize("hasRole('TEACHER')")
     @PostMapping("/create")
     public ResponseEntity<ResponseDTO<CourseResponseDTO>> createCourse(
-            @Validated @RequestBody CourseRequestDTO request,
-            HttpServletRequest httpServletRequest
+            @Validated @RequestBody CourseRequestDTO request
     ) {
         return ResponseEntity.status(HttpStatus.CREATED).body(courseService.createCourse(request));
+    }
+
+    // Update a Course
+    @PreAuthorize("hasRole('TEACHER')")
+    @PutMapping("/update/{courseId}")
+    public ResponseEntity<ResponseDTO<CourseResponseDTO>> updateCourse(
+            @PathVariable Long courseId,
+            @Validated @RequestBody CourseRequestDTO request
+    ) {
+        return ResponseEntity.status(HttpStatus.OK).body(courseService.updateCourse(courseId, request));
     }
 }
