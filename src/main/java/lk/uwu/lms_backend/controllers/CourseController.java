@@ -20,6 +20,7 @@ public class CourseController {
     private final CourseService courseService;
 
     // Get All Courses
+    @PreAuthorize("hasAnyRole('TEACHER', 'STUDENT')")
     @GetMapping
     public ResponseEntity<ResponseDTO<List<CourseResponseDTO>>> getAllCourses() {
         return ResponseEntity.status(HttpStatus.OK).body(courseService.getAllCourses());
