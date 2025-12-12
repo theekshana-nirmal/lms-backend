@@ -21,6 +21,14 @@ public class CourseService {
     public ResponseDTO<List<CourseResponseDTO>> getAllCourses() {
         List<Course> courses = courseRepository.findAll();
 
+        if (courses.isEmpty()) {
+            return new ResponseDTO<>(
+                    200,
+                    "No courses found",
+                    List.of()
+            );
+        }
+
         // Convert List<Course> -> List<CourseResponseDTO>
         List<CourseResponseDTO> courseDTOS = courses.stream().map(this::mapToDto).toList();
 
@@ -48,6 +56,27 @@ public class CourseService {
         return new ResponseDTO<>(
                 201,
                 "Course created successfully",
+                courseDto
+        );
+    }
+
+    // UPDATE A COURSE
+    public ResponseDTO<CourseResponseDTO> updateCourse(Long courseId, CourseRequestDTO request) {
+        Course course = courseRepository.findById(courseId)
+                .orElseThrow(() -> new RuntimeException("Course not found"));
+
+        course.setCourseName(request.getCourseName());
+        course.setDescription(request.getDescription());
+        course.setCoverImageUrl(
+                request.getCoverImageUrl() != null ? request.getCoverImageUrl() : course.getCoverImageUrl()
+        );
+
+        Course updatedCourse = courseRepository.save(course);
+        CourseResponseDTO courseDto = mapToDto(updatedCourse);
+
+        return new ResponseDTO<>(
+                200,
+                "Course updated successfully",
                 courseDto
         );
     }
