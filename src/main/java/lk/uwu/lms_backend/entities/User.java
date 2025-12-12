@@ -7,7 +7,10 @@ import lombok.Setter;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "users")
@@ -45,4 +48,9 @@ public class User {
 
     @LastModifiedDate
     private LocalDateTime updatedAt;
+
+    // Relationships
+    @OneToMany(mappedBy = "createdBy", cascade = CascadeType.ALL)
+    private List<Course> courses = new ArrayList<>();
+
 }
