@@ -1,5 +1,6 @@
 package lk.uwu.lms_backend.services;
 
+import lk.uwu.lms_backend.dtos.CourseRequestDTO;
 import lk.uwu.lms_backend.dtos.CourseResponseDTO;
 import lk.uwu.lms_backend.dtos.ResponseDTO;
 import lk.uwu.lms_backend.dtos.UserDetailsResponseDTO;
@@ -27,6 +28,27 @@ public class CourseService {
                 200,
                 "Success",
                 courseDTOS
+        );
+    }
+
+    // CREATE A COURSE
+    public ResponseDTO<CourseResponseDTO> createCourse(CourseRequestDTO request) {
+        Course course = new Course();
+
+        course.setCourseName(request.getCourseName());
+        course.setDescription(request.getDescription());
+        course.setCoverImageUrl(
+                request.getCoverImageUrl() != null ? request.getCoverImageUrl() : "https://placehold.co/600x400.jpeg"
+        );
+
+        Course savedCourse = courseRepository.save(course);
+
+        CourseResponseDTO courseDto = mapToDto(savedCourse);
+
+        return new ResponseDTO<>(
+                201,
+                "Course created successfully",
+                courseDto
         );
     }
 
