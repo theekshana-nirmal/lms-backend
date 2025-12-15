@@ -17,6 +17,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
 import java.util.HashMap;
 import java.util.concurrent.TimeUnit;
 
@@ -74,6 +75,14 @@ public class AuthenticationService {
         String accessToken = jwtService.generateAccessToken(new HashMap<>(), userDetails);
         String refreshToken = jwtService.generateRefreshToken(new HashMap<>(), userDetails);
 
+        // Set Access Token as a HttpOnly cookie
+        Cookie accessTokenCookie = new Cookie("accessToken", accessToken);
+        accessTokenCookie.setHttpOnly(true);
+        accessTokenCookie.setPath("/");
+        // accessTokenCookie.setSecure(true);
+        accessTokenCookie.setMaxAge((int) TimeUnit.MINUTES.toSeconds(30));
+        response.addCookie(accessTokenCookie);
+
         // Set Refresh Token as a HttpOnly cookie
         Cookie refreshTokenCookie = new Cookie("refreshToken", refreshToken);
         refreshTokenCookie.setHttpOnly(true);
@@ -84,9 +93,8 @@ public class AuthenticationService {
 
         return new UserAuthResponseDTO(
                 user.getEmail(),
-                accessToken,
-                user.getRole().name(),
-                TimeUnit.MINUTES.toMillis(30));
+                user.getRole().name()
+        );
     }
 
     // Get new Access Token using Refresh Token
@@ -104,11 +112,18 @@ public class AuthenticationService {
         // Generate new Access Token
         String newAccessToken = jwtService.generateAccessToken(new HashMap<>(), userDetails);
 
+        // Set Access Token as a HttpOnly cookie
+        Cookie accessTokenCookie = new Cookie("accessToken", newAccessToken);
+        accessTokenCookie.setHttpOnly(true);
+        accessTokenCookie.setPath("/");
+        // accessTokenCookie.setSecure(true);
+        accessTokenCookie.setMaxAge((int) TimeUnit.MINUTES.toSeconds(30));
+        response.addCookie(accessTokenCookie);
+
         return new UserAuthResponseDTO(
                 user.getEmail(),
-                newAccessToken,
-                user.getRole().name(),
-                TimeUnit.MINUTES.toMillis(30));
+                user.getRole().name()
+        );
     }
 
     // User Logout
