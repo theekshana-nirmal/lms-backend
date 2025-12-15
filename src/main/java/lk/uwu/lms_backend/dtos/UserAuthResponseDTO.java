@@ -11,7 +11,6 @@ import lombok.Setter;
 @Setter
 public class UserAuthResponseDTO {
     private String email;
-    private String accessToken;
+//    private String accessToken;
     private String role;
-    private long expiresIn;
 }
