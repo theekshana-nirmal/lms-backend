@@ -99,7 +99,7 @@ public class AuthenticationService {
     }
 
     // Get new Access Token using Refresh Token
-    public UserAuthResponseDTO refreshAccessToken(String refreshToken, HttpServletResponse response) {
+    public UserAuthResponseDTO refreshAccessToken(String refreshToken) {
         // Validate Refresh Token
         String userEmail = jwtService.extractUserEmail(refreshToken);
         User user = userRepository.findByEmail(userEmail)
