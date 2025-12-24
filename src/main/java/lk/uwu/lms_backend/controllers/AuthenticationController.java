@@ -40,8 +40,7 @@ public class AuthenticationController {
     // Refresh Token
     @PostMapping("/refresh-token")
     public ResponseEntity<UserAuthResponseDTO> refreshToken(
-            @CookieValue("refreshToken") String refreshToken,
-            HttpServletResponse httpServletResponse
+            @CookieValue("refreshToken") String refreshToken
     ){
         UserAuthResponseDTO response = authenticationService.refreshAccessToken(refreshToken);
         return ResponseEntity.status(HttpStatus.OK).body(response);
