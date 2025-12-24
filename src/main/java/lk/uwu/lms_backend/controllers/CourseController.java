@@ -26,6 +26,15 @@ public class CourseController {
         return ResponseEntity.status(HttpStatus.OK).body(courseService.getAllCourses());
     }
 
+    // Get Course by ID
+    @PreAuthorize("hasAnyRole('TEACHER', 'STUDENT')")
+    @GetMapping("/{courseId}")
+    public ResponseEntity<ResponseDTO<CourseResponseDTO>> getCourseById(
+            @PathVariable Long courseId
+    ) {
+        return ResponseEntity.status(HttpStatus.OK).body(courseService.getCourseById(courseId));
+    }
+
     // Create a Course
     @PreAuthorize("hasRole('TEACHER')")
     @PostMapping("/create")
