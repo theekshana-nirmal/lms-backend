@@ -59,7 +59,8 @@ public class CourseService {
                 course.setCoverImageUrl(
                                 request.getCoverImageUrl() != null ? request.getCoverImageUrl()
                                                 : "https://placehold.co/600x400.jpeg");
-                course.setCreatedBy(teacher); 
+                course.setCreatedBy(teacher);
+
 
                 Course savedCourse = courseRepository.save(course);
 
