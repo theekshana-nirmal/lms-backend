@@ -12,6 +12,7 @@ import lk.uwu.lms_backend.exceptions.UserCredentialsInvalidException;
 import lk.uwu.lms_backend.exceptions.UserNotFoundException;
 import lk.uwu.lms_backend.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.AuthenticationException;
@@ -23,6 +24,7 @@ import java.util.concurrent.TimeUnit;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class AuthenticationService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
@@ -79,6 +81,8 @@ public class AuthenticationService {
         String accessToken = jwtService.generateAccessToken(new HashMap<>(), userDetails);
         String refreshToken = jwtService.generateRefreshToken(new HashMap<>(), userDetails);
 
+        log.info("Generated Access Token: {}", accessToken);
+        log.info("Generated Refresh Token: {}", refreshToken);
         // Set Refresh Token as a HttpOnly cookie
         Cookie refreshTokenCookie = new Cookie("refreshToken", refreshToken);
         refreshTokenCookie.setHttpOnly(true);
