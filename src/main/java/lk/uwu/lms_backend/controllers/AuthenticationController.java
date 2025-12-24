@@ -43,7 +43,7 @@ public class AuthenticationController {
             @CookieValue("refreshToken") String refreshToken,
             HttpServletResponse httpServletResponse
     ){
-        UserAuthResponseDTO response = authenticationService.refreshAccessToken(refreshToken, httpServletResponse);
+        UserAuthResponseDTO response = authenticationService.refreshAccessToken(refreshToken);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
