@@ -73,8 +73,18 @@ public class CourseService {
 
         // UPDATE A COURSE
         public ResponseDTO<CourseResponseDTO> updateCourse(Long courseId, CourseRequestDTO request) {
+                // Get currently authenticated user
+                Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+                String teacherEmail = authentication.getName();
+
+                // Find the course
                 Course course = courseRepository.findById(courseId)
                                 .orElseThrow(() -> new RuntimeException("Course not found"));
+
+                // Verify the teacher owns this course
+                if (!course.getCreatedBy().getEmail().equals(teacherEmail)) {
+                        throw new RuntimeException("You are not authorized to update this course");
+                }
 
                 course.setCourseName(request.getCourseName());
                 course.setDescription(request.getDescription());
@@ -89,6 +99,29 @@ public class CourseService {
                                 200,
                                 "Course updated successfully",
                                 courseDto);
+        }
+
+        // DELETE A COURSE
+        public ResponseDTO<String> deleteCourse(Long courseId) {
+                // Get currently authenticated user
+                Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+                String teacherEmail = authentication.getName();
+
+                // Find the course
+                Course course = courseRepository.findById(courseId)
+                                .orElseThrow(() -> new RuntimeException("Course not found"));
+
+                // Verify the teacher owns this course
+                if (!course.getCreatedBy().getEmail().equals(teacherEmail)) {
+                        throw new RuntimeException("You are not authorized to delete this course");
+                }
+
+                courseRepository.delete(course);
+
+                return new ResponseDTO<>(
+                                200,
+                                "Course deleted successfully",
+                                "Course with ID " + courseId + " has been deleted");
         }
 
         // Utility for Map to DTO
