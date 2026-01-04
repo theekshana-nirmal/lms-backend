@@ -40,13 +40,13 @@ public class AuthenticationService {
 
     // User registration
     public UserAuthResponseDTO registerUser(UserRegistrationRequestDTO request, HttpServletResponse response) {
+        // Check if user already exists (should be checked first)
+        if (userRepository.findByEmail(request.getEmail()).isPresent()) {
+            throw new UserAlreadyExistsException("User with provided email already exists");
+        }
         // Check if passwords match
         if (!request.getPassword().equals(request.getConfirmPassword())) {
             throw new UserCredentialsInvalidException("Passwords do not match");
-        }
-        // Check if user already exists
-        if (userRepository.findByEmail(request.getEmail()).isPresent()) {
-            throw new UserAlreadyExistsException("User with provided email already exists");
         }
 
         User user = new User();
