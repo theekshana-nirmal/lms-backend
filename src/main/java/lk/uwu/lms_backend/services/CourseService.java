@@ -19,123 +19,146 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class CourseService {
-    private final CourseRepository courseRepository;
-    private final UserRepository userRepository;
+        private final CourseRepository courseRepository;
+        private final UserRepository userRepository;
 
-    // GET ALL COURSES
-    public ResponseDTO<List<CourseResponseDTO>> getAllCourses() {
-        List<Course> courses = courseRepository.findAll();
+        // GET ALL COURSES
+        public ResponseDTO<List<CourseResponseDTO>> getAllCourses() {
+                List<Course> courses = courseRepository.findAll();
 
-        if (courses.isEmpty()) {
-            return new ResponseDTO<>(
-                    200,
-                    "No courses found",
-                    List.of());
+                if (courses.isEmpty()) {
+                        return new ResponseDTO<>(
+                                        200,
+                                        "No courses found",
+                                        List.of());
+                }
+
+                // Convert List<Course> -> List<CourseResponseDTO>
+                List<CourseResponseDTO> courseDTOS = courses.stream().map(this::mapToDto).toList();
+
+                return new ResponseDTO<>(
+                                200,
+                                "Success",
+                                courseDTOS);
         }
 
-        // Convert List<Course> -> List<CourseResponseDTO>
-        List<CourseResponseDTO> courseDTOS = courses.stream().map(this::mapToDto).toList();
+        // CREATE A COURSE
+        public ResponseDTO<CourseResponseDTO> createCourse(CourseRequestDTO request) {
+                // Get currently authenticated user (the teacher creating the course)
+                Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+                String teacherEmail = authentication.getName(); // Gets the email from UserDetails
 
-        return new ResponseDTO<>(
-                200,
-                "Success",
-                courseDTOS);
-    }
+                // Find the teacher in the database
+                User teacher = userRepository.findByEmail(teacherEmail)
+                                .orElseThrow(() -> new UserNotFoundException("Teacher not found"));
 
-    // CREATE A COURSE
-    public ResponseDTO<CourseResponseDTO> createCourse(CourseRequestDTO request) {
-        // Get currently authenticated user (the teacher creating the course)
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String teacherEmail = authentication.getName(); // Gets the email from UserDetails
+                Course course = new Course();
 
-        // Find the teacher in the database
-        User teacher = userRepository.findByEmail(teacherEmail)
-                .orElseThrow(() -> new UserNotFoundException("Teacher not found"));
+                course.setCourseName(request.getCourseName());
+                course.setDescription(request.getDescription());
+                course.setCoverImageUrl(
+                                request.getCoverImageUrl() != null ? request.getCoverImageUrl()
+                                                : "https://placehold.co/600x400.jpeg");
+                course.setCreatedBy(teacher);
 
-        Course course = new Course();
+                Course savedCourse = courseRepository.save(course);
 
-        course.setCourseName(request.getCourseName());
-        course.setDescription(request.getDescription());
-        course.setCoverImageUrl(
-                request.getCoverImageUrl() != null ? request.getCoverImageUrl()
-                        : "https://placehold.co/600x400.jpeg");
-        course.setCreatedBy(teacher);
+                CourseResponseDTO courseDto = mapToDto(savedCourse);
 
-
-        Course savedCourse = courseRepository.save(course);
-
-        CourseResponseDTO courseDto = mapToDto(savedCourse);
-
-        return new ResponseDTO<>(
-                201,
-                "Course created successfully",
-                courseDto);
-    }
-
-    // UPDATE A COURSE
-    public ResponseDTO<CourseResponseDTO> updateCourse(Long courseId, CourseRequestDTO request) {
-        Course course = courseRepository.findById(courseId)
-                .orElseThrow(() -> new RuntimeException("Course not found"));
-
-        course.setCourseName(request.getCourseName());
-        course.setDescription(request.getDescription());
-        course.setCoverImageUrl(
-                request.getCoverImageUrl() != null ? request.getCoverImageUrl()
-                        : course.getCoverImageUrl());
-
-        Course updatedCourse = courseRepository.save(course);
-        CourseResponseDTO courseDto = mapToDto(updatedCourse);
-
-        return new ResponseDTO<>(
-                200,
-                "Course updated successfully",
-                courseDto);
-    }
-
-    // Utility for Map to DTO
-    private CourseResponseDTO mapToDto(Course course) {
-        CourseResponseDTO courseDto = new CourseResponseDTO();
-
-        courseDto.setId(course.getId());
-        courseDto.setCourseName(course.getCourseName());
-        courseDto.setDescription(course.getDescription());
-        courseDto.setCoverImageUrl(
-                course.getCoverImageUrl() != null ? course.getCoverImageUrl()
-                        : "https://placehold.co/600x400.jpeg");
-        courseDto.setCreatedDate(course.getCreatedDate().toString());
-        courseDto.setUpdatedAt(course.getUpdatedAt().toString());
-
-        // Covert User Details to DTO
-        if (course.getCreatedBy() != null) {
-            UserDetailsResponseDTO userDTO = new UserDetailsResponseDTO();
-            User user = course.getCreatedBy();
-
-            userDTO.setId(user.getId());
-            userDTO.setFirstName(user.getFirstName());
-            userDTO.setLastName(user.getLastName());
-            userDTO.setEmail(user.getEmail());
-            userDTO.setRole(user.getRole().toString());
-            userDTO.setProfilePhotoUrl(user.getProfilePhotoUrl());
-            userDTO.setCreatedAt(user.getCreatedAt().toString());
-            userDTO.setUpdatedAt(
-                    user.getUpdatedAt() != null ? user.getUpdatedAt().toString() : null);
-
-            courseDto.setCreatedBy(userDTO);
+                return new ResponseDTO<>(
+                                201,
+                                "Course created successfully",
+                                courseDto);
         }
 
-        return courseDto;
-    }
+        // UPDATE A COURSE
+        public ResponseDTO<CourseResponseDTO> updateCourse(Long courseId, CourseRequestDTO request) {
+                Course course = courseRepository.findById(courseId)
+                                .orElseThrow(() -> new RuntimeException("Course not found"));
 
-    // GET COURSE BY ID
-    public ResponseDTO<CourseResponseDTO> getCourseById(Long courseId) {
-        Course course = courseRepository.findById(courseId)
-                .orElseThrow(() -> new RuntimeException("Course not found"));
+                course.setCourseName(request.getCourseName());
+                course.setDescription(request.getDescription());
+                course.setCoverImageUrl(
+                                request.getCoverImageUrl() != null ? request.getCoverImageUrl()
+                                                : course.getCoverImageUrl());
 
-        CourseResponseDTO courseDto = mapToDto(course);
+                Course updatedCourse = courseRepository.save(course);
+                CourseResponseDTO courseDto = mapToDto(updatedCourse);
 
-        return new ResponseDTO<>(
-                200,
-                "Success",
-                courseDto);
-    }
+                return new ResponseDTO<>(
+                                200,
+                                "Course updated successfully",
+                                courseDto);
+        }
+
+        // Utility for Map to DTO
+        private CourseResponseDTO mapToDto(Course course) {
+                CourseResponseDTO courseDto = new CourseResponseDTO();
+
+                courseDto.setId(course.getId());
+                courseDto.setCourseName(course.getCourseName());
+                courseDto.setDescription(course.getDescription());
+                courseDto.setCoverImageUrl(
+                                course.getCoverImageUrl() != null ? course.getCoverImageUrl()
+                                                : "https://placehold.co/600x400.jpeg");
+                courseDto.setCreatedDate(course.getCreatedDate().toString());
+                courseDto.setUpdatedAt(course.getUpdatedAt().toString());
+
+                // Covert User Details to DTO
+                if (course.getCreatedBy() != null) {
+                        UserDetailsResponseDTO userDTO = new UserDetailsResponseDTO();
+                        User user = course.getCreatedBy();
+
+                        userDTO.setId(user.getId());
+                        userDTO.setFirstName(user.getFirstName());
+                        userDTO.setLastName(user.getLastName());
+                        userDTO.setEmail(user.getEmail());
+                        userDTO.setRole(user.getRole().toString());
+                        userDTO.setProfilePhotoUrl(user.getProfilePhotoUrl());
+                        userDTO.setCreatedAt(user.getCreatedAt().toString());
+                        userDTO.setUpdatedAt(
+                                        user.getUpdatedAt() != null ? user.getUpdatedAt().toString() : null);
+
+                        courseDto.setCreatedBy(userDTO);
+                }
+
+                return courseDto;
+        }
+
+        // GET COURSE BY ID
+        public ResponseDTO<CourseResponseDTO> getCourseById(Long courseId) {
+                Course course = courseRepository.findById(courseId)
+                                .orElseThrow(() -> new RuntimeException("Course not found"));
+
+                CourseResponseDTO courseDto = mapToDto(course);
+
+                return new ResponseDTO<>(
+                                200,
+                                "Success",
+                                courseDto);
+        }
+
+        // GET COURSES BY TEACHER ID
+        public ResponseDTO<List<CourseResponseDTO>> getCoursesByTeacher(Long teacherId) {
+                // Verify teacher exists
+                userRepository.findById(teacherId)
+                                .orElseThrow(() -> new UserNotFoundException("Teacher not found"));
+
+                List<Course> courses = courseRepository.findByCreatedBy_Id(teacherId);
+
+                if (courses.isEmpty()) {
+                        return new ResponseDTO<>(
+                                        200,
+                                        "No courses found for this teacher",
+                                        List.of());
+                }
+
+                // Convert List<Course> -> List<CourseResponseDTO>
+                List<CourseResponseDTO> courseDTOS = courses.stream().map(this::mapToDto).toList();
+
+                return new ResponseDTO<>(
+                                200,
+                                "Success",
+                                courseDTOS);
+        }
 }
