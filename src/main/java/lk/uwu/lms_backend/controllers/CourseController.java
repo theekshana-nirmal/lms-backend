@@ -15,7 +15,7 @@ import java.util.List;
 
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("api/courses")
+@RequestMapping("/api/courses")
 public class CourseController {
     private final CourseService courseService;
 
@@ -57,5 +57,13 @@ public class CourseController {
             @PathVariable Long courseId,
             @Validated @RequestBody CourseRequestDTO request) {
         return ResponseEntity.status(HttpStatus.OK).body(courseService.updateCourse(courseId, request));
+    }
+
+    // Delete a Course
+    @PreAuthorize("hasRole('TEACHER')")
+    @DeleteMapping("/delete/{courseId}")
+    public ResponseEntity<ResponseDTO<String>> deleteCourse(
+            @PathVariable Long courseId) {
+        return ResponseEntity.status(HttpStatus.OK).body(courseService.deleteCourse(courseId));
     }
 }
