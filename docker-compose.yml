@@ -1,0 +1,18 @@
+services:
+  backend-app:
+    container_name: lms-backend-container
+    build: .
+    ports:
+      - "8080:8080"
+    env_file:
+      - .env
+
+  frontend-app:
+    container_name: lms-frontend-container
+    build: ../lms-frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend-app
+    env_file:
+      - ../lms-frontend/.env
