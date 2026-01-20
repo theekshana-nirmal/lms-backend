@@ -1,21 +1,26 @@
 services:
   backend-app:
+    image: theekshananirmal/lms-backend:latest
     container_name: lms-backend-container
     build:
       context: .
     ports:
       - "8080:8080"
-    env_file:
-      - .env
+    environment:
+      - DB_URL=${DB_URL}
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - FRONTEND_URL=${FRONTEND_URL}
+      - JWT_SECRET=${JWT_SECRET}
+      - SPRING_USER=${SPRING_USER}
+      - SPRING_PASSWORD=${SPRING_PASSWORD}
+    restart: always
 
   frontend-app:
+    image: theekshananirmal/lms-frontend:latest
     container_name: lms-frontend-container
-    build:
-      context: ../lms-frontend
-      args:
-        # Use the public URL that the browser will access
-        VITE_API_BASE_URL: http://localhost:8080
     ports:
       - "80:80"
+    restart: always
     depends_on:
       - backend-app
