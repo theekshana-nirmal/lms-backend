@@ -22,7 +22,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(UserAlreadyExistsException.class)
     public ResponseEntity<ErrorResponseDTO> handleUserAlreadyExistsException(UserAlreadyExistsException ex) {
         ErrorResponseDTO errorResponse = new ErrorResponseDTO(
-                400,
+                409,
                 ex.getMessage(),
                 System.currentTimeMillis()
         );

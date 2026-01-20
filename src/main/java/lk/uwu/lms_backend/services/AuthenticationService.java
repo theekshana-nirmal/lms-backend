@@ -12,27 +12,41 @@ import lk.uwu.lms_backend.exceptions.UserCredentialsInvalidException;
 import lk.uwu.lms_backend.exceptions.UserNotFoundException;
 import lk.uwu.lms_backend.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import org.springframework.beans.factory.annotation.Value;
+
 import java.util.HashMap;
-import java.util.concurrent.TimeUnit;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class AuthenticationService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
 
+    @Value("${jwt.access-token.expiration-ms}")
+    private long accessTokenExpiration;
+
+    @Value("${jwt.refresh-token.expiration-ms}")
+    private long refreshTokenExpiration;
+
     // User registration
     public UserAuthResponseDTO registerUser(UserRegistrationRequestDTO request, HttpServletResponse response) {
-        // Check if user already exists
+        // Check if user already exists (should be checked first)
         if (userRepository.findByEmail(request.getEmail()).isPresent()) {
-            throw new UserAlreadyExistsException("User with email " + request.getEmail() + " already exists");
+            throw new UserAlreadyExistsException("User with provided email already exists");
+        }
+        // Check if passwords match
+        if (!request.getPassword().equals(request.getConfirmPassword())) {
+            throw new UserCredentialsInvalidException("Passwords do not match");
         }
 
         User user = new User();
@@ -48,7 +62,8 @@ public class AuthenticationService {
     }
 
     // User Login
-    public UserAuthResponseDTO loginUser(UserLoginRequestDTO request, HttpServletResponse response) throws UserCredentialsInvalidException {
+    public UserAuthResponseDTO loginUser(UserLoginRequestDTO request, HttpServletResponse response)
+            throws UserCredentialsInvalidException {
         try {
             // Authenticate user credentials
             authenticationManager.authenticate(
@@ -74,22 +89,31 @@ public class AuthenticationService {
         String accessToken = jwtService.generateAccessToken(new HashMap<>(), userDetails);
         String refreshToken = jwtService.generateRefreshToken(new HashMap<>(), userDetails);
 
-        // Set Refresh Token as a HttpOnly cookie
-        Cookie refreshTokenCookie = new Cookie("refreshToken", refreshToken);
-        refreshTokenCookie.setHttpOnly(true);
-        refreshTokenCookie.setPath("/");
-        // refreshTokenCookie.setSecure(true);
-        refreshTokenCookie.setMaxAge((int) TimeUnit.DAYS.toSeconds(30));
-        response.addCookie(refreshTokenCookie);
+        log.info("Generated Access Token: {}", accessToken);
+        log.info("Generated Refresh Token: {}", refreshToken);
+
+        // Set Refresh Token as a HttpOnly cookie with SameSite attribute
+        setRefreshTokenCookie(response, refreshToken);
 
         return new UserAuthResponseDTO(
                 user.getEmail(),
                 accessToken,
                 user.getRole().name(),
-                TimeUnit.MINUTES.toMillis(30));
+                accessTokenExpiration);
     }
 
-    // Get new Access Token using Refresh Token
+    // Helper method to set refresh token cookie with proper security attributes
+    private void setRefreshTokenCookie(HttpServletResponse response, String refreshToken) {
+        Cookie refreshTokenCookie = new Cookie("refreshToken", refreshToken);
+        refreshTokenCookie.setHttpOnly(true);
+        refreshTokenCookie.setPath("/");
+        refreshTokenCookie.setAttribute("SameSite", "Strict");
+        // refreshTokenCookie.setSecure(true); // Enable in production with HTTPS
+        refreshTokenCookie.setMaxAge((int) (refreshTokenExpiration / 1000)); // Convert ms to seconds
+        response.addCookie(refreshTokenCookie);
+    }
+
+    // Get new Access Token using Refresh Token (with rotation)
     public UserAuthResponseDTO refreshAccessToken(String refreshToken, HttpServletResponse response) {
         // Validate Refresh Token
         String userEmail = jwtService.extractUserEmail(refreshToken);
@@ -104,11 +128,18 @@ public class AuthenticationService {
         // Generate new Access Token
         String newAccessToken = jwtService.generateAccessToken(new HashMap<>(), userDetails);
 
+        // SECURITY: Implement refresh token rotation - generate new refresh token
+        String newRefreshToken = jwtService.generateRefreshToken(new HashMap<>(), userDetails);
+        log.info("Generated new Refresh Token for user: {}", userEmail);
+
+        // Set new refresh token cookie
+        setRefreshTokenCookie(response, newRefreshToken);
+
         return new UserAuthResponseDTO(
                 user.getEmail(),
                 newAccessToken,
                 user.getRole().name(),
-                TimeUnit.MINUTES.toMillis(30));
+                accessTokenExpiration);
     }
 
     // User Logout
@@ -117,7 +148,8 @@ public class AuthenticationService {
         Cookie refreshTokenCookie = new Cookie("refreshToken", null);
         refreshTokenCookie.setHttpOnly(true);
         refreshTokenCookie.setPath("/");
-        // refreshTokenCookie.setSecure(true);
+        refreshTokenCookie.setAttribute("SameSite", "Strict");
+        // refreshTokenCookie.setSecure(true); // Enable in production with HTTPS
         refreshTokenCookie.setMaxAge(0); // Expire immediately
         response.addCookie(refreshTokenCookie);
     }

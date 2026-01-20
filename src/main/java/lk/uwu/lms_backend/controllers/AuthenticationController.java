@@ -21,8 +21,7 @@ public class AuthenticationController {
     @PostMapping("/register")
     public ResponseEntity<UserAuthResponseDTO> register(
             @RequestBody UserRegistrationRequestDTO request,
-            HttpServletResponse httpServletResponse
-    ){
+            HttpServletResponse httpServletResponse) {
         UserAuthResponseDTO response = authenticationService.registerUser(request, httpServletResponse);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
@@ -31,8 +30,7 @@ public class AuthenticationController {
     @PostMapping("/login")
     public ResponseEntity<UserAuthResponseDTO> login(
             @RequestBody UserLoginRequestDTO request,
-            HttpServletResponse httpServletResponse
-    ){
+            HttpServletResponse httpServletResponse) {
         UserAuthResponseDTO response = authenticationService.loginUser(request, httpServletResponse);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
@@ -40,9 +38,13 @@ public class AuthenticationController {
     // Refresh Token
     @PostMapping("/refresh-token")
     public ResponseEntity<UserAuthResponseDTO> refreshToken(
-            @CookieValue("refreshToken") String refreshToken,
-            HttpServletResponse httpServletResponse
-    ){
+            @CookieValue(value = "refreshToken", required = false) String refreshToken,
+            HttpServletResponse httpServletResponse) {
+        // Check if refresh token cookie is present
+        if (refreshToken == null || refreshToken.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
         UserAuthResponseDTO response = authenticationService.refreshAccessToken(refreshToken, httpServletResponse);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
@@ -50,13 +52,11 @@ public class AuthenticationController {
     // User Logout
     @PostMapping("/logout")
     public ResponseEntity<LogoutResponseDTO> logout(
-            HttpServletResponse httpServletResponse
-    ){
+            HttpServletResponse httpServletResponse) {
         authenticationService.logoutUser(httpServletResponse);
         LogoutResponseDTO response = new LogoutResponseDTO(
                 "User logged out successfully",
-                true
-        );
+                true);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 }
