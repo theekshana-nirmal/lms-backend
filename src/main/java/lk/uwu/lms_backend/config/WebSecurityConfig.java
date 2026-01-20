@@ -1,6 +1,7 @@
 package lk.uwu.lms_backend.config;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -76,12 +77,15 @@ public class WebSecurityConfig {
         return authProvider;
     }
 
+    @Value("${${FRONTEND_URL:http://localhost:5173}}")
+    private String frontendUrl;
+
     // CORS configuration
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration corsConfiguration = new CorsConfiguration();
         corsConfiguration.setAllowedOrigins(
-                List.of("http://localhost:5173", "http://localhost"));
+                List.of("http://localhost:5173", "http://localhost", frontendUrl));
         corsConfiguration.setAllowedHeaders(List.of("*"));
         corsConfiguration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         corsConfiguration.setAllowCredentials(true);
