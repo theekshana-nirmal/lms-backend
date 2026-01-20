@@ -77,7 +77,7 @@ public class WebSecurityConfig {
         return authProvider;
     }
 
-    @Value("${${FRONTEND_URL:http://localhost:5173}}")
+    @Value("${FRONTEND_URL:http://localhost:5173}")
     private String frontendUrl;
 
     // CORS configuration
